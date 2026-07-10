@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30 внедрений ИИ: было, стало, источник</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f2f4f8;
+    color: #1f2937;
+    margin: 0;
+    padding: 0 0 60px;
+    line-height: 1.55;
+  }
+  .header {
+    background: linear-gradient(135deg,#0f766e 0%,#134e4a 100%);
+    color: #fff;
+    padding: 36px 24px 28px;
+    text-align: center;
+  }
+  .header h1 { margin: 0 0 8px; font-size: 1.7em; font-weight: 700; }
+  .header p { margin: 0 auto; opacity: .88; font-size: .95em; max-width: 560px; }
+  .stats {
+    display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .stat {
+    background: rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: 10px 16px;
+    min-width: 110px;
+  }
+  .stat b { display: block; font-size: 1.3em; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .78em; opacity: .85; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .filter-btn {
+    border: 1px solid #e2e8f0;
+    background: #fff; color: #475569;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: .82em;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .filter-btn.active { background: var(--bg); color: var(--fg); border-color: var(--fg); font-weight: 600; }
+  .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+  .tool-link {
+    border: none; background: #0f766e; color: #fff; border-radius: 20px;
+    padding: 6px 14px; font-size: .82em; cursor: pointer;
+  }
+  .tool-link.secondary { background: #64748b; }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 24px 16px 0; }
+
+  .legend {
+    background: #fff; border-radius: 14px; padding: 16px 18px; margin-bottom: 22px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    font-size: .85em; color: #475569;
+  }
+  .legend b { color: #1f2937; }
+
+  .stage-block { margin-bottom: 30px; }
+  .stage-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 1.05em; font-weight: 700; margin: 0 0 6px 2px;
+    color: var(--fg);
+  }
+  .stage-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--fg); }
+  .stage-count { margin-left: auto; font-size: .72em; font-weight: 400; color: #94a3b8; }
+  .stage-intro { font-size: .85em; color: #64748b; margin: 0 0 12px 2px; max-width: 64ch; }
+
+  .card {
+    background: #fff; border-radius: 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    overflow: hidden;
+    scroll-margin-top: 70px;
+  }
+  .card-head {
+    width: 100%; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; text-align: left; font: inherit; color: inherit;
+  }
+  .case-num {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    background: #f1f5f9; color: #0f766e; font-weight: 700; font-size: .85em;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .head-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .head-topic { font-weight: 600; font-size: .95em; }
+  .head-meta { font-size: .75em; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge {
+    flex-shrink: 0; font-size: .72em; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    background: var(--bg); color: var(--fg);
+  }
+  .chev {
+    flex-shrink: 0; color: #cbd5e1; font-size: 1.3em; transition: transform .2s;
+  }
+  .card-head[aria-expanded="true"] .chev { transform: rotate(90deg); }
+
+  .card-body {
+    max-height: 0; overflow: hidden; transition: max-height .25s ease;
+    padding: 0 18px;
+  }
+  .card-body.open { padding: 4px 18px 18px; }
+
+  .block { margin-bottom: 12px; }
+  .block-label {
+    font-size: .68em; text-transform: uppercase; letter-spacing: .04em;
+    color: #94a3b8; font-weight: 700; margin-bottom: 5px;
+  }
+  .block p { margin: 0; font-size: .92em; }
+  .block.after { background: #f0fdfa; border-radius: 10px; padding: 12px 14px; }
+  .block.after .block-label { color: #0f766e; }
+
+  .clinic-note {
+    font-size: .85em; background: #eff6ff; border: 1px solid #bfdbfe;
+    color: #1e3a5f; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+  }
+  .clinic-note b { color: #1e40af; }
+
+  .source-line { font-size: .76em; color: #94a3b8; }
+  .source-line a { color: #64748b; text-decoration: underline; text-underline-offset: 2px; }
+
+  .hidden { display: none !important; }
+
+  .closing {
+    background: #fff; border-radius: 14px; padding: 20px 22px; margin-top: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  }
+  .closing h2 { margin: 0 0 8px; font-size: 1.15em; }
+  .closing p { margin: 0 0 14px; font-size: .92em; color: #475569; }
+  .contact-box {
+    display: inline-block; background: #f0fdfa; border: 1px solid #99f6e4;
+    color: #0f766e; border-radius: 8px; padding: 10px 14px; font-size: .9em; font-weight: 600;
+  }
+
+  .foot-note {
+    max-width: 780px; margin: 18px auto 0; padding: 0 16px;
+    font-size: .78em; color: #94a3b8; line-height: 1.6;
+  }
+
+  @media (max-width: 480px) {
+    .header h1 { font-size: 1.35em; }
+    .stat { min-width: 90px; padding: 8px 12px; }
+  }
+
+  @media print {
+    .toolbar { display: none; }
+    .card-body { max-height: none !important; padding: 4px 18px 18px !important; }
+    .chev { display: none; }
+    .card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>30 внедрений ИИ. Было, стало, источник</h1>
+  <p>Конкретные примеры из бизнеса и стоматологических клиник: что менялось после внедрения ИИ-агента, в цифрах и с ссылкой на источник</p>
+  <div class="stats">
+    <div class="stat"><b>30</b><span>внедрений</span></div>
+    <div class="stat"><b>8</b><span>направлений</span></div>
+    <div class="stat"><b>25+</b><span>источников</span></div>
+    <div class="stat"><b>0</b><span>воды</span></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="filter-btn active" data-filter="all">Все</button>
+  <button class="filter-btn" data-filter="Звонки и запись" style="--fg:#075985;--bg:#e0f2fe">Звонки и запись</button>
+  <button class="filter-btn" data-filter="Пациенты возвращаются" style="--fg:#166534;--bg:#dcfce7">Пациенты возвращаются</button>
+  <button class="filter-btn" data-filter="Диагностика" style="--fg:#0f766e;--bg:#ccfbf1">Диагностика</button>
+  <button class="filter-btn" data-filter="Деньги и документы" style="--fg:#854d0e;--bg:#fef9c3">Деньги и документы</button>
+  <button class="filter-btn" data-filter="Клиенты и репутация" style="--fg:#9d174d;--bg:#fce7f3">Клиенты и репутация</button>
+  <button class="filter-btn" data-filter="Продажи и продвижение" style="--fg:#9a3412;--bg:#fff7ed">Продажи и продвижение</button>
+  <button class="filter-btn" data-filter="Команда и обучение" style="--fg:#4338ca;--bg:#e0e7ff">Команда и обучение</button>
+  <button class="filter-btn" data-filter="Оборудование и склад" style="--fg:#334155;--bg:#e2e8f0">Оборудование и склад</button>
+  <div class="toolbar-actions">
+    <button class="tool-link" id="expandAll">Развернуть всё</button>
+    <button class="tool-link secondary" id="collapseAll">Свернуть всё</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="legend">
+    <b>Как читать карточки</b><br>
+    Сначала видно только название и главную цифру. Нажмите на карточку, внутри: что было, что сделали, что это значит для клиники, и источник, на который можно сослаться.
+  </div>
+
+  <div class="stage-block" data-stage="Звонки и запись" style="--fg:#075985;--bg:#e0f2fe">
+    <div class="stage-title"><span class="stage-dot"></span>Звонки и запись<span class="stage-count">4 примера</span></div>
+    <p class="stage-intro">Первый контакт с клиникой чаще всего происходит по телефону. Если трубку не взяли, человек звонит следующему в списке.</p>
+
+    <div class="card" id="case-1">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">1</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-ресепшн ловит звонки, которые раньше терялись</span>
+          <span class="head-meta">Источник: dialzara.com</span>
+        </span>
+        <span class="badge">10 819%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Подрядчик получал 42 звонка в месяц, пропускал 74% из них и терял около 260&nbsp;400 $ выручки в год.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Голосовой ИИ-агент стоимостью около 2&nbsp;388 $ в год отвечает на каждый звонок, расчётная окупаемость составила 10 819% за первый год.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Администратор физически не может ответить на все звонки в часы приёма, вечером и в выходные. ИИ-агент отвечает всегда.</div>
+        <div class="source-line">Источник: <a href="https://dialzara.com/blog/missed-calls-hidden-costs-and-ai-solutions" target="_blank" rel="noopener">dialzara.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-2">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">2</span>
+        <span class="head-main">
+          <span class="head-topic">Экстренные вызовы после закрытия перестали пропадать</span>
+          <span class="head-meta">Источник: techbullion.com</span>
+        </span>
+        <span class="badge">27 600 $</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>HVAC-подрядчик не отвечал на звонки после закрытия офиса и упустил 23 аварийных вызова за один период наблюдения.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Каждый такой вызов оценивается примерно в 1&nbsp;200 $. Именно столько выручки уходило конкурентам, пока телефон молчал по вечерам.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Пациент с острой болью звонит вечером, а не только с 9 до 18. ИИ-агент фиксирует обращение и предлагает ближайшее время записи.</div>
+        <div class="source-line">Источник: <a href="https://techbullion.com/the-end-of-missed-calls-how-ai-receptionists-are-changing-small-business-operations/" target="_blank" rel="noopener">techbullion.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-3">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">3</span>
+        <span class="head-main">
+          <span class="head-topic">Голосовой агент на бронировании поднял выручку по телефону</span>
+          <span class="head-meta">Источник: hostie.ai</span>
+        </span>
+        <span class="badge">+141%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Сеть ресторанов Burma Food Group принимала часть броней вручную, часть звонков оставалась без ответа в загруженные часы.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После голосового ИИ-агента Hostie число броней по телефону выросло на 141%. Звонок превращается в подтверждённую бронь за 22 секунды.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Та же механика для записи на приём: агент подтверждает время за секунды, а не после третьего гудка на удержании.</div>
+        <div class="source-line">Источник: <a href="https://hostie.ai/resources/after-hours-ai-for-restaurant-reservations-auto-confirm-setup" target="_blank" rel="noopener">hostie.ai</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-4">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">4</span>
+        <span class="head-main">
+          <span class="head-topic">Голосовые напоминания снизили неявки в клинике</span>
+          <span class="head-meta">Источник: JMIR Formative Research</span>
+        </span>
+        <span class="badge">-50,7%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Часть пациентов записывалась и просто не приходила: забывали, или напоминание было одинаковым для всех и приходило слишком поздно.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Рецензируемое исследование в JMIR Formative Research зафиксировало снижение неявок на 50,7% (p&lt;0.001). Отдельные практики показывают снижение от 25% до 87%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Пустое кресло в 14:00 из-за забывчивости пациента: это упущенный приём, который ИИ-напоминание предотвращает почти бесплатно.</div>
+        <div class="source-line">Источник: JMIR Formative Research, через <a href="https://www.patientdesk.ai/blog/how-ai-reduces-dental-no-shows-by-50-the-data-driven-solution" target="_blank" rel="noopener">patientdesk.ai</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Пациенты возвращаются" style="--fg:#166534;--bg:#dcfce7">
+    <div class="stage-title"><span class="stage-dot"></span>Пациенты возвращаются<span class="stage-count">3 примера</span></div>
+    <p class="stage-intro">Часть пациентов не ушла к конкурентам, они просто забыли вернуться. Это самый дешёвый источник новой записи: база уже есть.</p>
+
+    <div class="card" id="case-5">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">5</span>
+        <span class="head-main">
+          <span class="head-topic">Реактивация «спящих» пациентов принесла почти миллион</span>
+          <span class="head-meta">Источник: datafluxsoft.com</span>
+        </span>
+        <span class="badge">847 000 $</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>В базе сети клиник числилось 12&nbsp;340 пациентов без визита более полугода. Ручные напоминания давали отклик около 4,2%.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Персональные, а не одинаковые для всех напоминания ИИ-агента вернули 2&nbsp;308 пациентов (18,7%), принесли 847&nbsp;000 $ выручки за год и окупились в 5,1 раза.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> У большинства практик есть такая же тихая база: люди, которым просто никто не напомнил про профгигиену.</div>
+        <div class="source-line">Источник: <a href="https://datafluxsoft.com/case-premium-clinics.html" target="_blank" rel="noopener">datafluxsoft.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-6">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">6</span>
+        <span class="head-main">
+          <span class="head-topic">Исходящие звонки ИИ заполнили расписание за 60 дней</span>
+          <span class="head-meta">Источник: patientxpress.us</span>
+        </span>
+        <span class="badge">150 записей</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Пациентов, которым нужно подтвердить визит или перезаписаться, администратор физически не успевал обзвонить руками.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>ИИ совершил более 500 исходящих звонков за 60 дней и напрямую забронировал около 150 приёмов. Конверсия из звонка в запись около 30%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Обзвон базы, который откладывается месяцами, ИИ делает за выходные, без сверхурочных для администратора.</div>
+        <div class="source-line">Источник: <a href="https://www.patientxpress.us/blog/how-dental-practice-booked-150-appointments-voice-ai.html" target="_blank" rel="noopener">patientxpress.us</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-7">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">7</span>
+        <span class="head-main">
+          <span class="head-topic">Чат-бот на сайте стоматологии утроил поток лидов</span>
+          <span class="head-meta">Источник: drmarketing.io</span>
+        </span>
+        <span class="badge">+200%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Durham Kids Dentistry, детская стоматологическая практика, получала около 12 обращений с сайта в месяц.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После установки ИИ-чат-бота практика получила 94 лида, поток обращений вырос на 200%, а 60% пришли вне рабочего времени клиники.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Сайт продолжает отвечать на вопросы ночью и в выходные, даже когда ресепшн закрыт.</div>
+        <div class="source-line">Источник: <a href="https://www.drmarketing.io/case-study-for-chatbots-on-dental-practice-websites" target="_blank" rel="noopener">drmarketing.io</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Диагностика" style="--fg:#0f766e;--bg:#ccfbf1">
+    <div class="stage-title"><span class="stage-dot"></span>Диагностика<span class="stage-count">4 примера</span></div>
+    <p class="stage-intro">ИИ здесь не ставит диагноз вместо врача. Это второй взгляд на снимок, который не устаёт и не спешит к следующему пациенту.</p>
+
+    <div class="card" id="case-8">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">8</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-анализ снимков нашёл кариес, который пропустили</span>
+          <span class="head-meta">Источник: VideaHealth</span>
+        </span>
+        <span class="badge">-43%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Врачи читают рентген-снимки самостоятельно. В потоке пациентов часть небольших поражений остаётся незамеченной.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>В клиническом испытании VideaHealth число пропущенных кариозных поражений снизилось на 43%, ложные находки упали на 15%. В партнёрском исследовании с Heartland Dental выявляемость выросла на 46%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Тот же снимок, который врач уже смотрит, ИИ проверяет за секунды вторым слоем, ничего не убирая из приёма.</div>
+        <div class="source-line">Источник: <a href="https://faliam.com/blog/videahealth" target="_blank" rel="noopener">faliam.com</a>, VideaHealth</div>
+      </div>
+    </div>
+
+    <div class="card" id="case-9">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">9</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-ассистент повысил выявляемость на треть</span>
+          <span class="head-meta">Источник: hellopearl.com</span>
+        </span>
+        <span class="badge">+37%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Диагностика по снимкам держится на внимательности и опыте одного врача в моменте приёма.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Исследование Pearl показало: врачи, работающие вместе с ИИ, находят на 37% больше стоматологических заболеваний, чем врачи без такой поддержки.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> ИИ подсвечивает на снимке то, что стоит показать пациенту, вместо разговора «просто поверьте мне на слово».</div>
+        <div class="source-line">Источник: <a href="https://hellopearl.com/blog/the-growth-of-ai-in-dental-radiology" target="_blank" rel="noopener">hellopearl.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-10">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">10</span>
+        <span class="head-main">
+          <span class="head-topic">Визуальные подсказки на снимке удвоили согласие на лечение</span>
+          <span class="head-meta">Источник: Overjet, ai.dentist</span>
+        </span>
+        <span class="badge">+100%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Пациенты соглашались на план лечения реже, когда видели рентген без объяснений. Доверие к словам врача без наглядности ограничено.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>В клинике Oceanic Dental после внедрения Overjet, подсвечивающего проблемные зоны прямо на снимке, доля принятых планов лечения выросла минимум вдвое.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Когда пациент своими глазами видит, что именно подсвечено на его снимке, разговор о лечении идёт короче и увереннее.</div>
+        <div class="source-line">Источник: <a href="https://ai.dentist/blog/ai-x-ray-analysis-roi-pearl-vs-overjet-vs-videahea/" target="_blank" rel="noopener">ai.dentist</a>, Overjet</div>
+      </div>
+    </div>
+
+    <div class="card" id="case-11">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">11</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-ассистент во время приёма сам готовит протокол</span>
+          <span class="head-meta">Источник: UCLA Health, AMA</span>
+        </span>
+        <span class="badge">15 791 ч</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Врач заполняет карту и протокол после каждого пациента. Рутина документации накладывается на вечер и личное время.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Исследование 1&nbsp;800 врачей показало экономию 16 минут за 8-часовую смену. Сеть клиник TPMG в сумме сэкономила 15&nbsp;791 час, это почти 1&nbsp;800 рабочих дней.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Врач говорит с пациентом, а не печатает во время приёма. Черновик записи в карту готовит ИИ, слушая разговор.</div>
+        <div class="source-line">Источник: <a href="https://www.uclahealth.org/news/release/ucla-study-finds-ai-scribes-may-reduce-documentation-time" target="_blank" rel="noopener">uclahealth.org</a>, <a href="https://www.ama-assn.org/practice-management/digital-health/ai-scribes-save-15000-hours-and-restore-human-side-medicine" target="_blank" rel="noopener">ama-assn.org</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Деньги и документы" style="--fg:#854d0e;--bg:#fef9c3">
+    <div class="stage-title"><span class="stage-dot"></span>Деньги и документы<span class="stage-count">6 примеров</span></div>
+    <p class="stage-intro">Проверка страховки, счета от поставщиков, прогноз кассы и юридические документы: рутина, которая не требует врача, но требует часов администратора.</p>
+
+    <div class="card" id="case-12">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">12</span>
+        <span class="head-main">
+          <span class="head-topic">Проверка страховки перестала съедать половину дня</span>
+          <span class="head-meta">Источник: hellopearl.com, overjet.com</span>
+        </span>
+        <span class="badge">69%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Больше 20% страховых заявок отклоняются, чаще всего из-за ошибок и неточностей ещё на этапе проверки покрытия.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>69% медицинских организаций, внедривших ИИ-проверку покрытия в реальном времени, сообщают о снижении отказов и росте успешных пересмотров заявок.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Администратор не звонит в страховую и не сидит в личном кабинете. ИИ проверяет покрытие пациента ещё до его прихода в кресло.</div>
+        <div class="source-line">Источник: <a href="https://hellopearl.com/blog/9-ai-dental-insurance-verification-benefits-pearl-ai" target="_blank" rel="noopener">hellopearl.com</a>, <a href="https://www.overjet.com/blog/guide-to-ai-dental-eligibility-verification" target="_blank" rel="noopener">overjet.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-13">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">13</span>
+        <span class="head-main">
+          <span class="head-topic">Обработка счетов сжалась с 20 минут до 3</span>
+          <span class="head-meta">Источник: mind-roots.com, ramp.com</span>
+        </span>
+        <span class="badge">150+ ч/мес</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Команда из 10 финансистов вручную сверяла около 3&nbsp;000 счетов в месяц с учётной системой, каждый счёт занимал 15-20 минут.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>ИИ-обработка счетов освободила более 150 часов в месяц, а в авиамедицинской компании REVA Air Ambulance время на один счёт упало до менее чем 3 минут.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Счета от поставщиков материалов, лабораторий и сервисов перестают требовать отдельного вечера бухгалтера каждый месяц.</div>
+        <div class="source-line">Источник: <a href="https://mind-roots.com/how-ai-workflow-automation-saved-a-finance-team-150-hours-a-month/" target="_blank" rel="noopener">mind-roots.com</a>, <a href="https://ramp.com/blog/ai-in-accounts-payable" target="_blank" rel="noopener">ramp.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-14">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">14</span>
+        <span class="head-main">
+          <span class="head-topic">Прогноз денежного потока стал точнее и дешевле</span>
+          <span class="head-meta">Источник: lucid.now</span>
+        </span>
+        <span class="badge">-20%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Закупки и расходы планировались на глазок, кассовые разрывы обнаруживались по факту, а не заранее.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>King's Hawaiian, внедрив ИИ-прогноз денежного потока, сократила процентные расходы более чем на 20%, а отдельная e-commerce компания подняла точность прогноза на 35% и сэкономила свыше 2&nbsp;000&nbsp;000 $ в год.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Заранее понятно, хватит ли денег на новую установку или пора притормозить с закупкой материалов.</div>
+        <div class="source-line">Источник: <a href="https://www.lucid.now/blog/ai-driven-financial-planning-case-studies/" target="_blank" rel="noopener">lucid.now</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-15">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">15</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ поймал мошенничество там, где человек бы не успел</span>
+          <span class="head-meta">Источник: spd.tech, veriff.com</span>
+        </span>
+        <span class="badge">-40%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Онлайн-платежи регулярно включали мошеннические операции, которые ловили только постфактум, уже после потери денег.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>E-commerce платформа с ИИ-детекцией мошенничества снизила потери на 40% за 6 месяцев, а маркетплейс электроники сократил мошеннические регистрации более чем на 90%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Тот же принцип защищает онлайн-оплату депозита за приём или рассрочку на лечение от отменённых платежей.</div>
+        <div class="source-line">Источник: <a href="https://spd.tech/machine-learning/credit-card-fraud-detection-case-study/" target="_blank" rel="noopener">spd.tech</a>, <a href="https://www.veriff.com/fraud/news/ai-fraud-detection-startups-smbs" target="_blank" rel="noopener">veriff.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-16">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">16</span>
+        <span class="head-main">
+          <span class="head-topic">Проверка кредитных соглашений сжалась с 360 000 часов до секунд</span>
+          <span class="head-meta">Источник: c3.ai</span>
+        </span>
+        <span class="badge">360000ч&rarr;сек</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Юристы JPMorgan Chase вручную проверяли кредитные соглашения. Это отнимало около 360&nbsp;000 часов юридической работы в год.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Платформа COIN проверяет те же соглашения за секунды. Юристы освободились для работы, которая действительно требует их квалификации.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Тот же принцип для стандартных документов клиники: согласия пациентов и типовые договоры проверяются мгновенно, а не неделю лежат у юриста.</div>
+        <div class="source-line">Источник: отраслевые обзоры внедрения, <a href="https://c3.ai/wp-content/uploads/2025/03/25_0314_C3_AI_CaseStudy_Global_Law_Firm_Gen_AI-1.pdf" target="_blank" rel="noopener">c3.ai</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-17">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">17</span>
+        <span class="head-main">
+          <span class="head-topic">Юридическая фирма ускорила анализ контрактов на 80%</span>
+          <span class="head-meta">Источник: c3.ai</span>
+        </span>
+        <span class="badge">-80%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Юристы глобальной юридической фирмы тратили часы на построчный анализ каждого контракта перед сделкой.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После внедрения генеративного ИИ время анализа контракта сократилось более чем на 80%, число обработанных контрактов выросло без найма новых юристов.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Проверка договора с новым поставщиком материалов или подрядчиком по ремонту занимает минуты, а не половину рабочего дня юриста на аутсорсе.</div>
+        <div class="source-line">Источник: <a href="https://c3.ai/wp-content/uploads/2025/03/25_0314_C3_AI_CaseStudy_Global_Law_Firm_Gen_AI-1.pdf" target="_blank" rel="noopener">c3.ai</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Клиенты и репутация" style="--fg:#9d174d;--bg:#fce7f3">
+    <div class="stage-title"><span class="stage-dot"></span>Клиенты и репутация<span class="stage-count">4 примера</span></div>
+    <p class="stage-intro">Отзыв или обращение не должны неделю ждать, пока кто-то их заметит.</p>
+
+    <div class="card" id="case-18">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">18</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-агент поддержки взял на себя две трети обращений</span>
+          <span class="head-meta">Источник: klarna.com</span>
+        </span>
+        <span class="badge">67%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Klarna обрабатывала запросы поддержки силами штата операторов, среднее решение вопроса занимало 11 минут.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>За первый месяц ИИ-ассистент обработал 2,3 миллиона обращений (объём работы 700 сотрудников), автоматизировал 67% диалогов, среднее время решения упало до 2 минут, повторные обращения снизились на 25%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Вопросы «сколько стоит», «как записаться», «что взять с собой» не должны ждать, пока освободится администратор.</div>
+        <div class="source-line">Источник: <a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank" rel="noopener">klarna.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-19">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">19</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-агенты поддержки закрывают больше половины обращений сами</span>
+          <span class="head-meta">Источник: fin.ai, decagon.ai</span>
+        </span>
+        <span class="badge">51-80%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Компании опасались доверять ИИ-поддержке: неясно было, сколько реальных обращений агент способен закрыть без человека.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Intercom Fin закрывает в среднем 51% обращений (у лидеров до 65-70%), Decagon сообщает о среднем показателе 80% обращений, отклонённых от живых операторов.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Даже часть типовых вопросов, снятых с администратора, освобождает время на реальных пациентов в кресле.</div>
+        <div class="source-line">Источник: <a href="https://fin.ai/learn/ai-customer-service-agents-compared" target="_blank" rel="noopener">fin.ai</a>, <a href="https://decagon.ai/case-studies" target="_blank" rel="noopener">decagon.ai</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-20">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">20</span>
+        <span class="head-main">
+          <span class="head-topic">Отзывы перестали неделями ждать ответа</span>
+          <span class="head-meta">Источник: vendasta.com</span>
+        </span>
+        <span class="badge">&times;23</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Отзывы приходят на десятке площадок одновременно, вручную уследить за всеми физически невозможно.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Один из клиентов Vendasta увеличил скорость ответа на отзывы в 23 раза всего за три дня. Среднее время реакции на негатив упало более чем на 65%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Плохой отзыв на картах получает ответ в течение часа, а не через неделю, когда его уже увидели полсотни потенциальных пациентов.</div>
+        <div class="source-line">Источник: <a href="https://www.vendasta.com/blog/ai-reputation-management/" target="_blank" rel="noopener">vendasta.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-21">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">21</span>
+        <span class="head-main">
+          <span class="head-topic">Поддержка на разных языках перестала быть проблемой</span>
+          <span class="head-meta">Источник: sutherlandglobal.com</span>
+        </span>
+        <span class="badge">35 000/мес</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Компании упирались в нехватку носителей языка: либо нанимать дорого, либо терять клиентов, которые не пишут по-английски.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Spotify с ИИ-переводом Sutherland Translate закрывает более 35&nbsp;000 обращений в месяц силами не-носителей языка с оценкой качества выше 90%. Туристическая компания сократила решение заявки с 16 до 6 часов.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Пациент, который пишет на другом языке, получает внятный ответ сразу, а не «перезвоните, когда найдём переводчика».</div>
+        <div class="source-line">Источник: <a href="https://www.sutherlandglobal.com/insights/case-study/new-ai-driven-language-translation-tool-lets-spotify-grow-its-service-capabilities" target="_blank" rel="noopener">sutherlandglobal.com</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Продажи и продвижение" style="--fg:#9a3412;--bg:#fff7ed">
+    <div class="stage-title"><span class="stage-dot"></span>Продажи и продвижение<span class="stage-count">2 примера</span></div>
+    <p class="stage-intro">Первый контакт с клиентом и контент для соцсетей можно готовить руками ИИ, оставляя людям разговор, который решает.</p>
+
+    <div class="card" id="case-22">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">22</span>
+        <span class="head-main">
+          <span class="head-topic">ИИ-агент по продажам поднял воронку наполовину</span>
+          <span class="head-meta">Источник: melonleaf.com</span>
+        </span>
+        <span class="badge">+52%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Менеджеры тратили часы на квалификацию лидов и однотипные письма, часть обращений остывала без ответа.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После внедрения ИИ-агента на базе Salesforce Agentforce объём квалифицированной воронки вырос на 52%, а скорость ответа лидам заметно сократилась.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Заявка с сайта или мессенджера получает мгновенный первый ответ, а не «мы перезвоним завтра».</div>
+        <div class="source-line">Источник: <a href="https://melonleaf.com/case-studies/increased-qualified-pipeline-by-52-with-ai-powered-sdr-agent/" target="_blank" rel="noopener">melonleaf.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-23">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">23</span>
+        <span class="head-main">
+          <span class="head-topic">Контент стал выходить по графику, а не «когда будет время»</span>
+          <span class="head-meta">Источник: shellypalmer.com</span>
+        </span>
+        <span class="badge">+113%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Маркетинговая команда физически не успевала выпускать статьи и посты в нужном объёме, контент выходил рывками.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>E-commerce компания с ИИ для создания контента увеличила объём публикаций блога на 113% и трафик сайта на 7%, освободив команду для стратегических задач.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Посты в соцсетях и статьи для сайта выходят по расписанию, а не только когда у администратора есть свободная минута.</div>
+        <div class="source-line">Источник: <a href="https://shellypalmer.com/case-studies/case-study-scaling-content-creation-with-ai-for-an-e-commerce-platform/" target="_blank" rel="noopener">shellypalmer.com</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Команда и обучение" style="--fg:#4338ca;--bg:#e0e7ff">
+    <div class="stage-title"><span class="stage-dot"></span>Команда и обучение<span class="stage-count">4 примера</span></div>
+    <p class="stage-intro">Найм, адаптация и планирование смен отнимают у руководителя часы, которые он мог бы провести с пациентами или с семьёй.</p>
+
+    <div class="card" id="case-24">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">24</span>
+        <span class="head-main">
+          <span class="head-topic">Просмотр резюме сжался с 8 часов до 5 минут</span>
+          <span class="head-meta">Источник: glivera.com</span>
+        </span>
+        <span class="badge">8ч&rarr;5мин</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Рекрутер тратил до 8 часов на чтение 100 резюме на одну вакансию, итоговый наём занимал до 7 недель.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>ИИ-скрининг тех же 100 резюме занимает 5 минут, экономия 1&nbsp;980 $ на наём, время найма упало до 3 недель, удержание в первый год выросло на 25%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Поиск нового администратора или ассистента перестаёт растягиваться на полтора месяца ручного перебора анкет.</div>
+        <div class="source-line">Источник: <a href="https://glivera.com/case-studies/ai-resume-screening-case-study/" target="_blank" rel="noopener">glivera.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-25">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">25</span>
+        <span class="head-main">
+          <span class="head-topic">Новые сотрудники стали самостоятельными втрое быстрее</span>
+          <span class="head-meta">Источник: bhyve.io</span>
+        </span>
+        <span class="badge">нед.10 вместо 30</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>В сервисной компании с текучкой 20% новичкам требовалось до 30 недель, чтобы перестать дёргать руководителя типовыми вопросами.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После внедрения ИИ-базы знаний число базовых вопросов руководителю снизилось на 60%, сотрудники начинали работать самостоятельно уже на 10-й неделе вместо 30-й.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Новый администратор находит ответ на «как оформить возврат» или «где бланки согласий» сам, не отвлекая старшего коллегу каждые полчаса.</div>
+        <div class="source-line">Источник: <a href="https://www.bhyve.io/blogs/ai-powered-onboarding-how-an-ai-knowledge-base-enhances-employee-experience" target="_blank" rel="noopener">bhyve.io</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-26">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">26</span>
+        <span class="head-main">
+          <span class="head-topic">Расписание смен само подстроилось под нагрузку</span>
+          <span class="head-meta">Источник: myshyft.com, mckinsey.com</span>
+        </span>
+        <span class="badge">-15..-20%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Смены планировались по привычке: в тихие часы персонала оказывалось слишком много, в загруженные слишком мало.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Сеть ресторанов с ИИ-планированием смен сократила сверхурочные на 20%, продуктовая сеть снизила расходы на персонал на 15%. По расчётам McKinsey грамотная аналитика загрузки сокращает отклонение затрат на персонал на 20-30%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Расписание администраторов и ассистентов подстраивается под реальный поток записей, а не под привычное «как всегда».</div>
+        <div class="source-line">Источник: <a href="https://www.myshyft.com/blog/ai-shift-scheduling/" target="_blank" rel="noopener">myshyft.com</a>, <a href="https://www.mckinsey.com/capabilities/operations/our-insights/smart-scheduling-how-to-solve-workforce-planning-challenges-with-ai" target="_blank" rel="noopener">mckinsey.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-27">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">27</span>
+        <span class="head-main">
+          <span class="head-topic">Планёрки и созвоны больше не теряются в памяти</span>
+          <span class="head-meta">Источник: Fireflies.ai</span>
+        </span>
+        <span class="badge">-25%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Договорённости с совещаний жили в чьей-то голове или в обрывочных заметках, а пересматривать запись целого созвона ради одного решения было слишком долго.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Команда с ИИ-транскрибацией созвонов выросла в продуктивности встреч на 30%, время на согласование итогов сократилось на 25%, продавцы стали экономить около 3 часов в неделю на заметках.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Планёрка с командой или разговор с поставщиком материалов фиксируется автоматически, включая «кто что обещал сделать».</div>
+        <div class="source-line">Источник: Fireflies.ai, кейс через meetrecord.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-block" data-stage="Оборудование и склад" style="--fg:#334155;--bg:#e2e8f0">
+    <div class="stage-title"><span class="stage-dot"></span>Оборудование и склад<span class="stage-count">3 примера</span></div>
+    <p class="stage-intro">Кресло, автоклав или компрессор, который сломался в разгар приёма, стоит дороже, чем его профилактика.</p>
+
+    <div class="card" id="case-28">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">28</span>
+        <span class="head-main">
+          <span class="head-topic">Оборудование стало ломаться реже и предсказуемо</span>
+          <span class="head-meta">Источник: bridgera.com</span>
+        </span>
+        <span class="badge">-50%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Оборудование обслуживали по графику «раз в квартал» или по факту поломки, простой производства обходился в миллионы.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>General Electric с предиктивным обслуживанием на базе ИИ сократила незапланированные простои на 50% и экономит 12&nbsp;000&nbsp;000 $ в год, автопроизводитель из другого случая сократил простои на 35% и экономит 2&nbsp;300&nbsp;000 $ в год.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Сервисные ИИ-подсказки предупреждают об износе автоклава или компрессора до того, как он встанет посреди рабочего дня.</div>
+        <div class="source-line">Источник: <a href="https://bridgera.com/predictive-maintenance-in-manufacturing-how-ai-is-transforming-uptime-costs-safety/" target="_blank" rel="noopener">bridgera.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-29">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">29</span>
+        <span class="head-main">
+          <span class="head-topic">Склад перестал закупать вслепую</span>
+          <span class="head-meta">Источник: ordergrid.com</span>
+        </span>
+        <span class="badge">-30%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Остатки и закупки материалов планировались на глаз, часть позиций заканчивалась не вовремя, часть скапливалась мёртвым грузом.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>Ритейлеры с ИИ-прогнозом спроса сокращают дефицит товара на складе на 30% и расходы на хранение излишков на 20-50%, дистрибьютор Amarra снизил затоваривание на 40%.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Расходники и материалы заказываются под реальный темп приёма, а не «на всякий случай с запасом» или «уже закончилось, ждём доставку».</div>
+        <div class="source-line">Источник: <a href="https://www.ordergrid.com/case-studies/from-stockouts-to-success-a-grocery-chain-cuts-waste-and-grows-sales-with-ai" target="_blank" rel="noopener">ordergrid.com</a></div>
+      </div>
+    </div>
+
+    <div class="card" id="case-30">
+      <button class="card-head" type="button" aria-expanded="false">
+        <span class="case-num">30</span>
+        <span class="head-main">
+          <span class="head-topic">Обращения в техподдержку стали закрываться за секунды</span>
+          <span class="head-meta">Источник: glean.com</span>
+        </span>
+        <span class="badge">-97%</span>
+        <span class="chev">›</span>
+      </button>
+      <div class="card-body">
+        <div class="block"><div class="block-label">Было</div><p>Сотрудник компании AssemblyAI ждал ответа на внутренний ИТ-запрос в среднем 15 минут, простой копился по всей компании.</p></div>
+        <div class="block after"><div class="block-label">Стало</div><p>После ИИ-поиска по базе знаний среднее время ответа упало до 23 секунд (на 97%), половина обращений закрывается вообще без участия человека.</p></div>
+        <div class="clinic-note"><b>В клинике.</b> Вопрос персонала «где актуальный прайс» или «как оформить гарантию на оборудование» получает ответ сразу, а не после обеда.</div>
+        <div class="source-line">Источник: <a href="https://www.glean.com/perspectives/how-ai-search-assistants-cut-support-ticket-resolution-time" target="_blank" rel="noopener">glean.com</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <h2>Какие из 30 сценариев подойдут именно вашей клинике?</h2>
+    <p>Редко подходят сразу все тридцать. Есть смысл начать с двух-трёх: там, где рутина прямо сейчас отнимает больше всего часов у вас и у команды.</p>
+    <div class="contact-box">Обсудим на примере вашей клиники: [впишите телефон / Telegram / e-mail]</div>
+  </div>
+</div>
+
+<p class="foot-note">Отчёт собран по открытым источникам: пресс-релизы компаний, кейс-стади поставщиков технологий, отраслевые обзоры и рецензируемые исследования. Цифры относятся к конкретным компаниям и исследованиям, указанным в каждом примере, и приведены как ориентир, а не гарантия: результат в вашей клинике зависит от масштаба, потока пациентов и того, что внедряется первым.</p>
+
+<script>
+document.querySelectorAll('.card-head').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var body = btn.nextElementSibling;
+    var open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    if (!open) {
+      body.classList.add('open');
+      body.style.maxHeight = body.scrollHeight + 40 + 'px';
+    } else {
+      body.style.maxHeight = 0;
+      body.classList.remove('open');
+    }
+  });
+});
+
+document.getElementById('expandAll').addEventListener('click', function() {
+  document.querySelectorAll('.card-head').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'true');
+    var body = btn.nextElementSibling;
+    body.classList.add('open');
+    body.style.maxHeight = body.scrollHeight + 40 + 'px';
+  });
+});
+document.getElementById('collapseAll').addEventListener('click', function() {
+  document.querySelectorAll('.card-head').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', 'false');
+    var body = btn.nextElementSibling;
+    body.style.maxHeight = 0;
+    body.classList.remove('open');
+  });
+});
+
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var f = btn.getAttribute('data-filter');
+    document.querySelectorAll('.stage-block').forEach(function(block) {
+      if (f === 'all' || block.getAttribute('data-stage') === f) {
+        block.classList.remove('hidden');
+      } else {
+        block.classList.add('hidden');
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

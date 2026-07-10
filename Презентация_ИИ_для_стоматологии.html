@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Умный помощник для стоматологии</title>
+<style>
+
+  /* ===== Tokens ===== */
+  :root{
+    --bg:#f3f6f4;
+    --surface:#ffffff;
+    --surface-soft:#eaf0ed;
+    --border:#dbe6e1;
+    --ink:#142e29;
+    --ink-soft:#52655f;
+    --on-deep:#eef5f2;
+    --on-deep-soft:#bcd6cd;
+    --deep:#123832;
+    --deep-2:#0c2823;
+    --ring:#8fd9c4;
+
+    --teal:#1c6a5b;
+    --amber:#96591c;
+    --rose:#a3402f;
+    --blue:#2b5578;
+    --purple:#5b4a86;
+
+    --font-display: Georgia, 'Times New Roman', 'PT Serif', serif;
+    --font-body: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1a17;
+      --surface:#16241f;
+      --surface-soft:#1c2b26;
+      --border:#2a3b35;
+      --ink:#eef3f0;
+      --ink-soft:#a9bab3;
+
+      --teal:#6fc3ae;
+      --amber:#e0a25c;
+      --rose:#dd8a78;
+      --blue:#7fa9c9;
+      --purple:#b3a2d9;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1a17; --surface:#16241f; --surface-soft:#1c2b26; --border:#2a3b35;
+    --ink:#eef3f0; --ink-soft:#a9bab3;
+    --teal:#6fc3ae; --amber:#e0a25c; --rose:#dd8a78; --blue:#7fa9c9; --purple:#b3a2d9;
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f6f4; --surface:#ffffff; --surface-soft:#eaf0ed; --border:#dbe6e1;
+    --ink:#142e29; --ink-soft:#52655f;
+    --teal:#1c6a5b; --amber:#96591c; --rose:#a3402f; --blue:#2b5578; --purple:#5b4a86;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-snap-type:y proximity;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  h1,h2,h3{ font-family:var(--font-display); text-wrap:balance; margin:0; font-weight:700; }
+  p{ margin:0; }
+
+  .deck{ max-width:1100px; margin:0 auto; }
+
+  .slide{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1.6rem;
+    padding:clamp(2.2rem,6vw,5rem) clamp(1.4rem,7vw,3rem);
+    scroll-snap-align:start;
+    border-bottom:1px solid var(--border);
+  }
+  .slide-inner{ max-width:720px; }
+  .slide-inner.wide{ max-width:920px; }
+
+  .slide-index{
+    position:absolute;
+    top:1.4rem; right:clamp(1.4rem,7vw,3rem);
+    font-size:.78rem;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.04em;
+  }
+  .slide-index.on-deep{ color:var(--on-deep-soft); }
+
+  .eyebrow{
+    display:block;
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:.9rem;
+  }
+  .eyebrow.cat::before{
+    content:"";
+    display:inline-block;
+    width:.5rem; height:.5rem;
+    border-radius:50%;
+    background:currentColor;
+    margin-right:.55rem;
+    vertical-align:middle;
+  }
+  .cat-teal{ color:var(--teal); }
+  .cat-amber{ color:var(--amber); }
+  .cat-rose{ color:var(--rose); }
+  .cat-blue{ color:var(--blue); }
+  .cat-purple{ color:var(--purple); }
+
+  h2.slide-title{ font-size:clamp(1.6rem,3.4vw,2.35rem); line-height:1.22; margin-bottom:1.1rem; }
+  .lede{ font-size:1.08rem; line-height:1.65; color:var(--ink-soft); max-width:62ch; }
+
+  .icon-badge{
+    width:2.7rem; height:2.7rem;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .icon-badge svg{ width:1.4rem; height:1.4rem; }
+  .badge-teal{ background:color-mix(in srgb, var(--teal) 14%, var(--surface)); color:var(--teal); }
+  .badge-amber{ background:color-mix(in srgb, var(--amber) 14%, var(--surface)); color:var(--amber); }
+  .badge-rose{ background:color-mix(in srgb, var(--rose) 14%, var(--surface)); color:var(--rose); }
+  .badge-blue{ background:color-mix(in srgb, var(--blue) 14%, var(--surface)); color:var(--blue); }
+  .badge-purple{ background:color-mix(in srgb, var(--purple) 14%, var(--surface)); color:var(--purple); }
+
+  .benefit{
+    margin-top:1.4rem;
+    padding:1.3rem 1.5rem;
+    border-radius:12px;
+    max-width:62ch;
+  }
+  .benefit-label{
+    display:block;
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    font-weight:700;
+    margin-bottom:.5rem;
+  }
+  .benefit p{ line-height:1.6; color:var(--ink); }
+  .benefit-teal{ background:color-mix(in srgb, var(--teal) 9%, var(--bg)); }
+  .benefit-teal .benefit-label{ color:var(--teal); }
+  .benefit-amber{ background:color-mix(in srgb, var(--amber) 9%, var(--bg)); }
+  .benefit-amber .benefit-label{ color:var(--amber); }
+  .benefit-rose{ background:color-mix(in srgb, var(--rose) 9%, var(--bg)); }
+  .benefit-rose .benefit-label{ color:var(--rose); }
+  .benefit-blue{ background:color-mix(in srgb, var(--blue) 9%, var(--bg)); }
+  .benefit-blue .benefit-label{ color:var(--blue); }
+  .benefit-purple{ background:color-mix(in srgb, var(--purple) 9%, var(--bg)); }
+  .benefit-purple .benefit-label{ color:var(--purple); }
+
+  /* ---- Cover & CTA (deep panels) ---- */
+  .slide.deep{
+    background:var(--deep);
+    color:var(--on-deep);
+    overflow:hidden;
+  }
+  .slide.deep .eyebrow{ color:var(--on-deep-soft); }
+  .slide.deep h1, .slide.deep h2{ color:var(--on-deep); }
+  .slide.deep .lede{ color:var(--on-deep-soft); }
+
+  .rings{
+    position:absolute;
+    right:clamp(-4rem,-2vw,2rem);
+    top:50%; transform:translateY(-50%);
+    width:min(46vw,460px); aspect-ratio:1;
+    pointer-events:none;
+  }
+  .rings span{
+    position:absolute; inset:0;
+    border-radius:50%;
+    border:1px solid color-mix(in srgb, var(--ring) 55%, transparent);
+  }
+  .rings span:nth-child(1){ inset:32%; background:color-mix(in srgb, var(--ring) 30%, transparent); border:none; }
+  .rings span:nth-child(2){ inset:18%; }
+  .rings span:nth-child(3){ inset:6%; }
+  .rings span:nth-child(4){ inset:-6%; }
+  @media (prefers-reduced-motion: no-preference){
+    .rings span:nth-child(2){ animation: pulse 3.6s ease-out infinite; }
+    .rings span:nth-child(3){ animation: pulse 3.6s ease-out infinite; animation-delay:.9s; }
+    .rings span:nth-child(4){ animation: pulse 3.6s ease-out infinite; animation-delay:1.8s; }
+  }
+  @keyframes pulse{
+    0%{ opacity:.85; }
+    70%{ opacity:0; }
+    100%{ opacity:0; }
+  }
+
+  .cover-h1{ font-size:clamp(2rem,5vw,3.1rem); line-height:1.18; max-width:14ch; }
+  .cover-sub{ margin-top:1.1rem; font-size:1.15rem; max-width:44ch; }
+  .cover-foot{ margin-top:2.4rem; font-size:.85rem; color:var(--on-deep-soft); }
+
+  /* ---- Hook slide list ---- */
+  .hook-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1.05rem; }
+  .hook-item{ display:flex; align-items:flex-start; gap:1rem; }
+  .hook-item .icon-badge{ width:2.3rem; height:2.3rem; margin-top:.1rem; }
+  .hook-item .icon-badge svg{ width:1.15rem; height:1.15rem; }
+  .hook-item p{ font-size:1.03rem; line-height:1.55; padding-top:.3rem; }
+  .hook-note{ margin-top:1.6rem; font-size:.95rem; color:var(--ink-soft); font-style:italic; }
+
+  /* ---- Reassurance rows ---- */
+  .reassure-list{ display:flex; flex-direction:column; gap:1.5rem; }
+  .reassure-item{ display:flex; gap:1.1rem; align-items:flex-start; }
+  .reassure-item p{ line-height:1.6; color:var(--ink); padding-top:.35rem; }
+
+  /* ---- Summary grid ---- */
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:1rem 1.4rem;
+  }
+  .summary-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:1.2rem 1.3rem;
+    display:flex; gap:.9rem; align-items:flex-start;
+  }
+  .summary-card p{ font-size:1rem; line-height:1.5; padding-top:.25rem; }
+
+  /* ---- CTA contact box ---- */
+  .contact-box{
+    margin-top:1.8rem;
+    display:inline-block;
+    padding:1rem 1.4rem;
+    border:1px solid color-mix(in srgb, var(--on-deep) 30%, transparent);
+    border-radius:10px;
+    font-size:1rem;
+    color:var(--on-deep);
+  }
+  .contact-box strong{ color:var(--ring); }
+
+  /* ---- Print ---- */
+  @media print{
+    :root{
+      --bg:#f3f6f4; --surface:#ffffff; --surface-soft:#eaf0ed; --border:#dbe6e1;
+      --ink:#142e29; --ink-soft:#52655f;
+      --teal:#1c6a5b; --amber:#96591c; --rose:#a3402f; --blue:#2b5578; --purple:#5b4a86;
+    }
+    html{ scroll-snap-type:none; }
+    .slide{ min-height:auto; height:186mm; page-break-after:always; border-bottom:none; }
+    .rings span{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1. COVER -->
+  <section class="slide deep">
+    <div class="slide-index on-deep">01 / 10</div>
+    <div class="rings" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="slide-inner">
+      <span class="eyebrow">Предложение для клиники</span>
+      <h1 class="cover-h1">Умный помощник, который освобождает ваше время</h1>
+      <p class="cover-sub">Как искусственный интеллект может помочь стоматологии — просто, по-человечески и без сложной техники.</p>
+      <p class="cover-foot">Читается за 5 минут</p>
+    </div>
+  </section>
+
+  <!-- 2. HOOK -->
+  <section class="slide">
+    <div class="slide-index">02 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow">Знакомая картина?</span>
+      <h2 class="slide-title">Пять моментов, которые случаются в клинике почти каждую неделю</h2>
+      <ul class="hook-list">
+        <li class="hook-item">
+          <span class="icon-badge badge-teal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5l1.5-2 4 1.5v3c0 1-1 2-2.2 1.9C10.8 19 5 13.2 4.6 6.2 4.5 5 5.5 4 6.5 4z"/></svg>
+          </span>
+          <p>Пациент звонит вечером или в выходной — а ответить некому</p>
+        </li>
+        <li class="hook-item">
+          <span class="icon-badge badge-amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v9H10l-3.5 3v-3H4z"/><circle cx="8.3" cy="10.5" r=".4" fill="currentColor" stroke="none"/><circle cx="12" cy="10.5" r=".4" fill="currentColor" stroke="none"/><circle cx="15.7" cy="10.5" r=".4" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <p>Администратор весь день отвечает на одни и те же вопросы</p>
+        </li>
+        <li class="hook-item">
+          <span class="icon-badge badge-rose" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z"/><path d="M10 18.5a2 2 0 0 0 4 0"/></svg>
+          </span>
+          <p>Пациенты, которые не приходили полгода, просто забыты</p>
+        </li>
+        <li class="hook-item">
+          <span class="icon-badge badge-blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5l2.2 4.6 5 .7-3.6 3.6.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.6 5-.7z"/></svg>
+          </span>
+          <p>Отзывы разбросаны по картам и сайтам — никто не успевает их читать</p>
+        </li>
+        <li class="hook-item">
+          <span class="icon-badge badge-purple" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l3.5 3.5V20.5H7z"/><path d="M14 3.5V7h3.5"/><path d="M9.3 12h5.4M9.3 15h5.4M9.3 9.5h2.6"/></svg>
+          </span>
+          <p>Врач и администратор к вечеру падают от одной и той же рутины</p>
+        </li>
+      </ul>
+      <p class="hook-note">Если хотя бы два пункта откликнулись — дальше будет полезно.</p>
+    </div>
+  </section>
+
+  <!-- 3. MISSED CALLS -->
+  <section class="slide">
+    <div class="slide-index">03 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow cat cat-teal">Звонки и заявки</span>
+      <h2 class="slide-title">Пациент звонит в девять вечера. Никто не берёт трубку</h2>
+      <p class="lede">Человек ищет стоматолога прямо сейчас: заболел зуб, появилось свободное время подумать, или просто вечер — единственная возможность позвонить. Если трубку не взяли, через минуту он звонит в клинику по соседству.</p>
+      <div class="benefit benefit-teal">
+        <span class="benefit-label">Что меняется</span>
+        <p>Умный помощник отвечает на звонки и заявки в любое время суток — вечером, в выходные, в праздники — и сразу предлагает удобное время записи. Ни один пациент больше не уходит просто потому, что не дозвонился.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. REPETITIVE QUESTIONS -->
+  <section class="slide">
+    <div class="slide-index">04 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow cat cat-amber">Ежедневная рутина</span>
+      <h2 class="slide-title">Одни и те же вопросы — двадцать раз в день</h2>
+      <p class="lede">Сколько стоит имплант, как записаться, что взять с собой, до скольки вы работаете. Администратор отвечает на это весь день — вместо того чтобы уделять внимание пациентам, которые уже сидят в кресле или ждут в холле.</p>
+      <div class="benefit benefit-amber">
+        <span class="benefit-label">Что меняется</span>
+        <p>Умный помощник берёт типовые вопросы на себя, а администратор освобождается для живого общения — того самого, ради которого пациенты выбирают именно вашу клинику, а не соседнюю.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. SLEEPING BASE -->
+  <section class="slide">
+    <div class="slide-index">05 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow cat cat-rose">Пациенты, которые могли бы вернуться</span>
+      <h2 class="slide-title">База пациентов молчит</h2>
+      <p class="lede">Кто-то был на осмотре полгода назад — пора на профгигиену. Кто-то откладывал лечение и просто забыл о нём. Без напоминания такие пациенты чаще всего не возвращаются — не потому что передумали, а потому что не вспомнили.</p>
+      <div class="benefit benefit-rose">
+        <span class="benefit-label">Что меняется</span>
+        <p>Умный помощник сам, лично и ненавязчиво напоминает каждому пациенту о его конкретном случае — не одинаковой рассылкой всем подряд, а обращением именно к нему. Это дополнительная запись без единого рубля на рекламу.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. REVIEWS -->
+  <section class="slide">
+    <div class="slide-index">06 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow cat cat-blue">Репутация клиники</span>
+      <h2 class="slide-title">Отзыв появился ночью. В клинике узнали через неделю</h2>
+      <p class="lede">Отзывы приходят на картах, в мессенджерах, на сайтах-агрегаторах — уследить за всем этим вручную нереально. Хороший отзыв никто не заметил, а на плохой никто вовремя не ответил — и его успели увидеть полсотни человек, которые как раз выбирали клинику.</p>
+      <div class="benefit benefit-blue">
+        <span class="benefit-label">Что меняется</span>
+        <p>Умный помощник следит за отзывами и сразу сообщает, если что-то пошло не так. Можно среагировать в тот же час, а не через неделю — репутация клиники под присмотром постоянно, а не раз в месяц.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. OWNER TIME -->
+  <section class="slide">
+    <div class="slide-index">07 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow cat cat-purple">Время врача</span>
+      <h2 class="slide-title">Вечером врач всё ещё сидит с бумагами</h2>
+      <p class="lede">Отчёты, согласия пациентов, сводки за неделю, переписка — всё это тихо съедает часы, которые могли бы достаться семье, отдыху или ещё одному пациенту.</p>
+      <div class="benefit benefit-purple">
+        <span class="benefit-label">Что меняется</span>
+        <p>Умный помощник берёт на себя черновую подготовку документов и простых отчётов. Час-два в день освобождаются просто потому, что рутину больше не нужно делать руками.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. REASSURANCE -->
+  <section class="slide" style="background:var(--surface-soft);">
+    <div class="slide-index">08 / 10</div>
+    <div class="slide-inner">
+      <span class="eyebrow">А если коротко о сомнениях</span>
+      <h2 class="slide-title">То, чего обычно боятся — и почему этого можно не бояться</h2>
+      <div class="reassure-list">
+        <div class="reassure-item">
+          <span class="icon-badge badge-rose" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19s-6.5-4-6.5-8.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 6.5 2.5C18.5 15 12 19 12 19z"/></svg>
+          </span>
+          <p><strong>Это не заменит вас и вашу команду.</strong> Лечением, диагностикой и общением с пациентом по-прежнему занимаетесь вы — помощник забирает только рутину.</p>
+        </div>
+        <div class="reassure-item">
+          <span class="icon-badge badge-amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="8" rx="4"/><circle cx="8" cy="12" r="2.2" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <p><strong>Это не дорого и не требует айтишников в штате.</strong> Настраивается один раз и дальше просто работает в фоне.</p>
+        </div>
+        <div class="reassure-item">
+          <span class="icon-badge badge-teal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l7 2.6v5.4c0 5-3 8-7 9-4-1-7-4-7-9V6.1z"/><path d="M9.2 12.2l1.9 1.9 3.7-3.9"/></svg>
+          </span>
+          <p><strong>Данные пациентов остаются внутри клиники.</strong> Никто посторонний доступа к ним не получает.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. SUMMARY -->
+  <section class="slide">
+    <div class="slide-index">09 / 10</div>
+    <div class="slide-inner wide">
+      <span class="eyebrow">Коротко</span>
+      <h2 class="slide-title">Что в итоге получает клиника</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="icon-badge badge-teal" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.2 2.2 4.8-5"/></svg></span>
+          <p>Ни один звонок и заявка не теряются</p>
+        </div>
+        <div class="summary-card">
+          <span class="icon-badge badge-amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.2 2.2 4.8-5"/></svg></span>
+          <p>Администратор освобождён от рутинных вопросов</p>
+        </div>
+        <div class="summary-card">
+          <span class="icon-badge badge-rose" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.2 2.2 4.8-5"/></svg></span>
+          <p>Пациенты возвращаются сами, без лишней рекламы</p>
+        </div>
+        <div class="summary-card">
+          <span class="icon-badge badge-blue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.2 2.2 4.8-5"/></svg></span>
+          <p>Репутация клиники под присмотром постоянно</p>
+        </div>
+        <div class="summary-card">
+          <span class="icon-badge badge-purple" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.2 2.2 4.8-5"/></svg></span>
+          <p>Несколько свободных часов у врача каждую неделю</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. CTA -->
+  <section class="slide deep">
+    <div class="slide-index on-deep">10 / 10</div>
+    <div class="rings" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="slide-inner">
+      <span class="eyebrow">Дальше</span>
+      <h2 class="slide-title">Готовы посмотреть, как это будет работать в вашей клинике?</h2>
+      <p class="lede" style="color:var(--on-deep-soft);">Можно начать с одного направления — например, со звонков или напоминаний пациентам — и увидеть результат раньше, чем во что-то придётся вкладываться всерьёз.</p>
+      <div class="contact-box">Обсудим детали: <strong>[впишите телефон / Telegram / e-mail]</strong></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
