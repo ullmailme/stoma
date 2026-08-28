@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Подключить Любочке постинг в ВК</title>
+<style>
+  :root{
+    --paper:#f4f6f8;
+    --card:#ffffff;
+    --ink:#161b22;
+    --ink-dim:#57606b;
+    --line:#dfe3e8;
+    --accent:#2f5fff;
+    --accent-ink:#ffffff;
+    --accent-soft:#eaf0ff;
+    --warn-bg:#fff6e0;
+    --warn-line:#f0d78c;
+    --warn-ink:#7a5c00;
+    --radius-lg:14px;
+    --radius-md:10px;
+    --radius-sm:8px;
+    --font-display:'Golos Text', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0f1216;
+      --card:#171b21;
+      --ink:#eef1f4;
+      --ink-dim:#9aa4af;
+      --line:#2a2f36;
+      --accent:#6b8fff;
+      --accent-ink:#0f1216;
+      --accent-soft:#1c2436;
+      --warn-bg:#2a230f;
+      --warn-line:#4a3c14;
+      --warn-ink:#e8c667;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-display);
+    line-height:1.6;
+    padding:56px 20px 80px;
+  }
+  .doc{ max-width:680px; margin:0 auto; }
+
+  .kicker{
+    font-size:13px; font-weight:600; color:var(--accent);
+    letter-spacing:.03em; margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:800;
+    font-size:clamp(26px,4vw,34px); letter-spacing:-.01em;
+    margin:0 0 18px; text-wrap:balance;
+  }
+  .lede{
+    font-size:16px; color:var(--ink-dim); margin:0 0 32px; max-width:56ch;
+  }
+  .lede b{ color:var(--ink); font-weight:700; }
+
+  .note{
+    display:flex; gap:12px; align-items:flex-start;
+    background:var(--warn-bg); border:1px solid var(--warn-line);
+    border-radius:var(--radius-md); padding:16px 18px; margin:0 0 40px;
+  }
+  .note svg{ flex:0 0 auto; width:20px; height:20px; color:var(--warn-ink); margin-top:2px; }
+  .note p{ margin:0; font-size:14.5px; color:var(--warn-ink); }
+  .note b{ font-weight:700; }
+
+  .steps{ display:flex; flex-direction:column; gap:28px; margin:0 0 40px; }
+  .step{
+    display:grid; grid-template-columns:40px 1fr; gap:16px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius-lg); padding:22px 22px 24px;
+  }
+  .step__num{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--accent); color:var(--accent-ink);
+    font-family:var(--font-display); font-weight:800; font-size:17px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step__body h2{
+    font-family:var(--font-display); font-weight:700; font-size:18px;
+    margin:6px 0 10px; letter-spacing:-.005em;
+  }
+  .step__body p{ margin:0 0 10px; font-size:15px; color:var(--ink-dim); }
+  .step__body p:last-child{ margin-bottom:0; }
+  .step__body b{ color:var(--ink); font-weight:700; }
+
+  .codebox{
+    display:block; font-family:var(--font-mono); font-size:12.5px;
+    color:var(--ink); background:var(--accent-soft); border:1px solid var(--line);
+    border-radius:var(--radius-sm); padding:12px 14px; margin:10px 0;
+    word-break:break-all; line-height:1.5;
+  }
+
+  .linkbtn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--accent); color:var(--accent-ink); text-decoration:none;
+    font-weight:700; font-size:14px; padding:11px 18px; border-radius:var(--radius-md);
+    margin:4px 0 6px; transition:filter .15s ease, transform .15s ease;
+  }
+  .linkbtn:hover{ filter:brightness(1.08); }
+  .linkbtn:active{ transform:translateY(1px) scale(.98); }
+  .linkbtn:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  .linkbtn svg{ width:15px; height:15px; }
+
+  .aside{
+    font-size:13.5px; color:var(--ink-dim); margin-top:10px;
+    padding-left:14px; border-left:2px solid var(--line);
+  }
+
+  .send{
+    display:flex; flex-direction:column; gap:10px; margin-top:4px;
+  }
+  .send__item{ display:flex; flex-direction:column; gap:2px; }
+  .send__item .tag{
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    color:var(--ink);
+  }
+  .send__item .src{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim); }
+
+  .subhead{
+    font-family:var(--font-display); font-weight:700; font-size:15px;
+    margin:20px 0 8px; padding-top:18px; border-top:1px dashed var(--line);
+  }
+
+  .shotreal{ display:flex; flex-direction:column; gap:8px; margin:12px auto; max-width:100%; }
+  .shotreal a{ display:block; }
+  .shotreal img{
+    width:100%; height:auto; display:block; border-radius:var(--radius-md);
+    border:1px solid var(--line); background:var(--card); cursor:zoom-in;
+  }
+  .shotreal figcaption{ font-size:12.5px; color:var(--ink-dim); text-align:center; }
+  .shotreal figcaption .zoom{ color:var(--accent); text-decoration:none; }
+  .shotreal-row{ display:flex; flex-direction:column; gap:18px; margin:14px 0; }
+
+  footer{
+    border-top:1px solid var(--line); padding-top:22px; margin-top:8px;
+    font-size:14px; color:var(--ink-dim);
+  }
+  footer b{ color:var(--ink); font-weight:700; }
+
+  a{ color:var(--accent); }
+  a:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+  <div class="doc">
+
+    <p class="kicker">Lyba · настройка</p>
+    <h1>Подключить Любочке постинг в ВК</h1>
+    <p class="lede">
+      Нужно получить два значения (токен и id группы) и прислать их мне —
+      остальное я положу в файл на сервере сама.
+    </p>
+
+    <div class="note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      <p>
+        <b>Важно сразу:</b> если хотите, чтобы Любочка могла постить с картинками
+        (не только текстом), делайте шаг 2 (личный токен), а не групповой ключ —
+        групповой ключ в принципе не умеет прикреплять фото, мы это уже проходили вчера.
+      </p>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <span class="step__num">1</span>
+        <div class="step__body">
+          <h2>Узнать номер группы</h2>
+          <p>Зайдите в свою группу ВК → <b>Управление сообществом</b> → <b>Обзор</b>.</p>
+          <p>Посмотрите на адрес страницы в браузере — там будет число вида
+            <code>club155768553</code> или <code>id=155768553</code>.</p>
+          <p>Скопируйте это число (без «club», без минуса). Это и есть id группы.</p>
+
+          <div class="subhead">Групповой ключ — упрощённый способ, но только для текста</div>
+          <p>Пока вы здесь же, в настройках группы, можно сразу выпустить и
+            <b>групповой</b> ключ доступа. Он проще личного (без отдельного сайта и
+            копирования из адресной строки), но <b>не умеет прикреплять фото</b> — годится
+            только для постов чистым текстом. Если нужны картинки, этот ключ не подойдёт,
+            переходите сразу к шагу 2 (личный токен).</p>
+
+          <div class="shotreal-row">
+            <figure class="shotreal">
+              <a href="Для инструкции/1 Кнопка в группе управление .png" target="_blank" rel="noopener"><img src="Для инструкции/1 Кнопка в группе управление .png" alt="Кнопка «Управление сообществом»"></a>
+              <figcaption>1. Кнопка «Управление сообществом»</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/2 Нажать пункт Дополнительно.png" target="_blank" rel="noopener"><img src="Для инструкции/2 Нажать пункт Дополнительно.png" alt="Пункт «Дополнительно»"></a>
+              <figcaption>2. Пункт «Дополнительно»</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/3 Нажать работа с API.png" target="_blank" rel="noopener"><img src="Для инструкции/3 Нажать работа с API.png" alt="«Работа с API»"></a>
+              <figcaption>3. «Работа с API»</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/4 Нажать создать ключ.png" target="_blank" rel="noopener"><img src="Для инструкции/4 Нажать создать ключ.png" alt="«Создать ключ»"></a>
+              <figcaption>4. «Создать ключ»</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/5 выбрать все пункты.png" target="_blank" rel="noopener"><img src="Для инструкции/5 выбрать все пункты.png" alt="Отметить все пункты доступа"></a>
+              <figcaption>5. Отметить все пункты доступа</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/6 уведомление в телефоне.png" target="_blank" rel="noopener"><img src="Для инструкции/6 уведомление в телефоне.png" alt="Уведомление придёт на телефон"></a>
+              <figcaption>6. Уведомление придёт на телефон</figcaption>
+            </figure>
+            <figure class="shotreal">
+              <a href="Для инструкции/7 подтвердить в телефоне.jpg" target="_blank" rel="noopener"><img src="Для инструкции/7 подтвердить в телефоне.jpg" alt="Подтвердить в приложении на телефоне"></a>
+              <figcaption>7. Подтвердить в приложении на телефоне</figcaption>
+            </figure>
+          </div>
+
+          <p>После подтверждения ВК покажет строку ключа — скопируйте её. Если решили
+            обойтись этим способом (без фото), пришлите этот ключ как «токен» в шаге 3
+            ниже, и шаг 2 можно пропустить.</p>
+
+          <div class="subhead">Если номер не виден в адресе — через настройки сообщества</div>
+          <p>Зайдите в сообщество и нажмите на шестерёнку настроек — та же кнопка, что и
+            в начале группового ключа выше.</p>
+
+          <figure class="shotreal">
+            <a href="Для инструкции/1 Кнопка в группе управление .png" target="_blank" rel="noopener"><img src="Для инструкции/1 Кнопка в группе управление .png" alt="Кнопка настроек сообщества"></a>
+            <figcaption>Кнопка настроек (шестерёнка) сообщества</figcaption>
+          </figure>
+
+          <p>Откроются настройки, и там будет строка с номером — скопируйте его оттуда.</p>
+
+          <figure class="shotreal">
+            <a href="Для инструкции/вот как найти номер сообщества.png" target="_blank" rel="noopener"><img src="Для инструкции/вот как найти номер сообщества.png" alt="Номер сообщества в настройках"></a>
+            <figcaption>Номер сообщества — скопировать из строки</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step__num">2</span>
+        <div class="step__body">
+          <h2>Получить личный токен</h2>
+          <p>Даёт право постить и от имени группы, и с картинками.</p>
+          <p>Откройте эту ссылку в браузере, залогинившись под тем аккаунтом ВК,
+            который является администратором группы:</p>
+          <a class="linkbtn" href="https://oauth.vk.com/authorize?client_id=2685278&scope=wall,photos,groups,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html&v=5.131" target="_blank" rel="noopener">
+            Открыть страницу авторизации ВК
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+          <span class="codebox">https://oauth.vk.com/authorize?client_id=2685278&amp;scope=wall,photos,groups,offline&amp;response_type=token&amp;redirect_uri=https://oauth.vk.com/blank.html&amp;v=5.131</span>
+          <p>ВК спросит разрешение — нажмите «Разрешить».</p>
+
+          <figure class="shotreal">
+            <a href="Для инструкции/Авторизоваться в Кате.png" target="_blank" rel="noopener"><img src="Для инструкции/Авторизоваться в Кате.png" alt="Экран подтверждения — «Авторизоваться в Kate Mobile»"></a>
+            <figcaption>Экран подтверждения — «Авторизоваться в Kate Mobile»</figcaption>
+          </figure>
+
+          <p>Вас перекинет на пустую страницу, адрес которой станет длинным и будет
+            содержать <code>access_token=НАБОР_БУКВ_И_ЦИФР&amp;expires_in=...</code> —
+            это и есть та строка, которую нужно скопировать (скриншот этого шага сюда
+            не кладём — на нём был бы виден настоящий токен).</p>
+
+          <p>Скопируйте только этот набор букв и цифр — от <code>access_token=</code>
+            до символа <code>&amp;</code>. Это и есть токен.</p>
+          <p class="aside">
+            Если браузер предупредит «не копируйте данные из адресной строки для
+            сторонних сайтов» — это стандартное предупреждение, не помеха, продолжайте.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step__num">3</span>
+        <div class="step__body">
+          <h2>Прислать мне</h2>
+          <p>Пришлите мне в чате три значения:</p>
+          <div class="send">
+            <div class="send__item"><span class="tag">id группы</span><span class="src">из шага 1</span></div>
+            <div class="send__item"><span class="tag">токен группы</span><span class="src">из шага 1, если делали групповой ключ</span></div>
+            <div class="send__item"><span class="tag">токен из адресной строки</span><span class="src">из шага 2, личный</span></div>
+          </div>
+          <p style="margin-top:14px">Я сохраню их на сервере в защищённый файл, и Любочка сможет
+            публиковать посты — сразу или по расписанию.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      Токен бессрочный, но если ВК его когда-нибудь отзовёт (например, если сменить
+      пароль) — просто повторите <b>шаг 2</b> и пришлите новый.
+    </footer>
+
+  </div>
+</body>
+</html>
