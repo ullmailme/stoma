@@ -33,8 +33,23 @@
 <a class="t" href="intent:#Intent;action=android.settings.SETTINGS;S.browser_fallback_url=https%3A%2F%2Fullmailme.github.io%2Fstoma%2Fintent-test.html%3Ffail%3D4;end">
   <b>4. Настройки (для сравнения)</b><span>Главный экран настроек телефона</span></a>
 
+<h1 style="margin-top:24px">Второй круг (кнопки 5–8)</h1>
+<p>Те же правила: нажмите и посмотрите, что открылось.</p>
+
+<a class="t" href="intent:#Intent;action=android.settings.MANAGE_ALL_APPLICATIONS_SETTINGS;S.browser_fallback_url=https%3A%2F%2Fullmailme.github.io%2Fstoma%2Fintent-test.html%3Ffail%3D5;end">
+  <b>5. Все приложения</b><span>Список всех приложений, оттуда уведомления выбранного</span></a>
+
+<a class="t" href="intent:#Intent;action=miui.intent.action.HIDDEN_APPS_CONFIG_ACTIVITY;S.package_name=com.android.chrome;S.package_label=Chrome;S.browser_fallback_url=https%3A%2F%2Fullmailme.github.io%2Fstoma%2Fintent-test.html%3Ffail%3D6;end">
+  <b>6. Экономия заряда для Chrome (Xiaomi)</b><span>Выбор «Нет ограничений» именно для Chrome</span></a>
+
+<a class="t" href="intent:#Intent;action=miui.intent.action.OP_AUTO_START;category=android.intent.category.DEFAULT;S.browser_fallback_url=https%3A%2F%2Fullmailme.github.io%2Fstoma%2Fintent-test.html%3Ffail%3D7;end">
+  <b>7. Автозапуск (Xiaomi)</b><span>Список приложений с автозапуском</span></a>
+
+<a class="t" href="intent:#Intent;action=android.settings.NOTIFICATION_SETTINGS;S.browser_fallback_url=https%3A%2F%2Fullmailme.github.io%2Fstoma%2Fintent-test.html%3Ffail%3D8;end">
+  <b>8. Уведомления (общие)</b><span>Общий экран настроек уведомлений</span></a>
+
 <script>
-  var m = /[?&]fail=(\d)/.exec(location.search);
+  var m = /[?&]fail=(\d+)/.exec(location.search);
   if (m) {
     var r = document.getElementById("res");
     r.hidden = false;
